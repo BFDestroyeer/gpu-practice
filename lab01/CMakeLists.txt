@@ -9,9 +9,13 @@ find_package(OpenCL 1.2 REQUIRED)
 
 set(TARGET_NAME lab01)
 
+file(GLOB_RECURSE TARGET_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 file(GLOB_RECURSE TARGET_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-add_executable(${TARGET_NAME} ${TARGET_SRC})
+include_directories("include")
 
-target_compile_definitions(${TARGET_NAME} PRIVATE "CL_TARGET_OPENCL_VERSION=220")
+add_executable(${TARGET_NAME} ${TARGET_HEADERS} ${TARGET_SRC})
+
+target_compile_definitions(${TARGET_NAME} PRIVATE "CL_TARGET_OPENCL_VERSION=120")
+target_compile_definitions(${TARGET_NAME} PRIVATE "KERNELS_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/cl/\"")
 target_link_libraries(${TARGET_NAME} PRIVATE OpenCL::OpenCL)
