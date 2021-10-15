@@ -4,10 +4,6 @@
 
 #include "kernel_utils.h"
 
-#ifndef KERNELS_DIR
-#define KERNELS_DIR
-#endif
-
 int main(int argc, char *argv[])
 {
     // Base task
@@ -38,11 +34,11 @@ int main(int argc, char *argv[])
         cl_program program = clCreateProgramWithSource(context, 1, strings, nullptr, nullptr);
         clBuildProgram(program, 1, &deviceId, nullptr, nullptr, nullptr);
         cl_kernel kernel = clCreateKernel(program, "hello", nullptr);
-        constexpr size_t globalWorkSize[] = {8};
-        constexpr size_t localWorkSize[] = {4, 4};
+        const size_t globalWorkSize = 8;
+        const size_t localWorkSize = 4;
 
         // Execute program
-        clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, globalWorkSize, localWorkSize, 0, nullptr, nullptr);
+        clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, &globalWorkSize, &localWorkSize, 0, nullptr, nullptr);
 
         clReleaseKernel(kernel);
         clReleaseProgram(program);
@@ -63,7 +59,7 @@ int main(int argc, char *argv[])
         cl_program program = clCreateProgramWithSource(context, 1, strings, nullptr, nullptr);
         clBuildProgram(program, 1, &deviceId, nullptr, nullptr, nullptr);
         cl_kernel kernel = clCreateKernel(program, "arraySum", nullptr);
-        constexpr size_t globalWorkSize[] = {elementsCount};
+        const size_t globalWorkSize = elementsCount;
 
         // Create buffer
         cl_mem buffer = clCreateBuffer(context, CL_MEM_READ_WRITE, elementsCount * sizeof(cl_int), nullptr, nullptr);
@@ -71,7 +67,7 @@ int main(int argc, char *argv[])
         clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&buffer);
 
         // Execute program
-        clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, globalWorkSize, nullptr, 0, nullptr, nullptr);
+        clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, &globalWorkSize, nullptr, 0, nullptr, nullptr);
         clFinish(queue);
         clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, elementsCount * sizeof(cl_int), array, 0, nullptr, nullptr);
 
