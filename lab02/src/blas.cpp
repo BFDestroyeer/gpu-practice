@@ -106,7 +106,7 @@ void daxpyOpenCL(int n, double a, double *x, int incx, double *y, int incy, cl_d
 
     // Setup arguments
     clSetKernelArg(kernel, 0, sizeof(int), &n);
-    clSetKernelArg(kernel, 1, sizeof(float), &a);
+    clSetKernelArg(kernel, 1, sizeof(double), &a);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &xBuffer);
     clSetKernelArg(kernel, 3, sizeof(int), &incx);
     clSetKernelArg(kernel, 4, sizeof(cl_mem), &yBuffer);
