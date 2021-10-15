@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 
         // Execute program
         clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, globalWorkSize, nullptr, 0, nullptr, nullptr);
+        clFinish(queue);
         clEnqueueReadBuffer(queue, buffer, CL_TRUE, 0, elementsCount * sizeof(cl_int), array, 0, nullptr, nullptr);
 
         // Print result
