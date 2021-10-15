@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-    constexpr int n = 10;
+    constexpr int n = 256 * 60000;
     constexpr int incx = 3;
     constexpr int incy = 2;
     constexpr size_t xSize = n * incx;

@@ -65,9 +65,10 @@ void saxpyOpenCL(int n, float a, float *x, int incx, float *y, int incy, cl_devi
     size_t group;
     clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &group, nullptr);
     auto globalWorkSize = static_cast<size_t>(n);
+    size_t localWorkSize = 256; // Use for experiments
     double begin = omp_get_wtime();
     clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, &globalWorkSize, nullptr, 0, nullptr, nullptr);
-    // clFinish(queue);
+    clFinish(queue);
     double end = omp_get_wtime();
     if (computationTime != nullptr)
     {
@@ -115,9 +116,10 @@ void daxpyOpenCL(int n, double a, double *x, int incx, double *y, int incy, cl_d
     size_t group;
     clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &group, nullptr);
     auto globalWorkSize = static_cast<size_t>(n);
+    size_t localWorkSize = 256; // Use for experiments
     double begin = omp_get_wtime();
     clEnqueueNDRangeKernel(queue, kernel, 1, nullptr, &globalWorkSize, nullptr, 0, nullptr, nullptr);
-    // clFinish(queue);
+    clFinish(queue);
     double end = omp_get_wtime();
     if (computationTime != nullptr)
     {
