@@ -14,4 +14,10 @@ void matrixMultiplyOpenMp(const float *a, const float *b, float *c, size_t m, si
 
 void matrixMultiplyOpenCl(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
                           double *computationTime);
+
+void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
+                               double *computationTime);
+
+void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
+                               double *computationTime);
 } // namespace MatrixUtils
