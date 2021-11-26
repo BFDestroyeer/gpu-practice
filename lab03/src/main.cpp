@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
     std::cout << "GPU: " << gpuDeviceName << std::endl;
 
     // Matrix initialization
-    constexpr int m = BLOCK_SIZE * 1;
-    constexpr int n = BLOCK_SIZE * 2;
-    constexpr int k = BLOCK_SIZE * 1;
+    constexpr int m = BLOCK_SIZE * 16;
+    constexpr int n = BLOCK_SIZE * 16;
+    constexpr int k = BLOCK_SIZE * 16;
 
     std::vector<float> a(m * n);
     std::vector<float> b(n * k);
