@@ -13,7 +13,7 @@ __kernel void matrix_multiply_image(__read_only image2d_t a, __read_only image2d
     for (int i = 0; i < blocks_count; i++)
     {
         a_block[local_column][local_row] = read_imagef(a, (int2)(BLOCK_SIZE * i + local_row, column)).x;
-        b_block[local_column][local_row] = (b, (int2)(row, BLOCK_SIZE * i + local_column)).x;
+        b_block[local_column][local_row] = read_imagef(b, (int2)(row, BLOCK_SIZE * i + local_column)).x;
         barrier(CLK_LOCAL_MEM_FENCE);
         for (int j = 0; j < BLOCK_SIZE; j++)
         {

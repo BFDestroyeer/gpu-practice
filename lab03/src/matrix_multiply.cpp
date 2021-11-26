@@ -167,7 +167,7 @@ void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k
                                   static_cast<size_t>(n), 0, nullptr, nullptr);
     auto bImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
                                   static_cast<size_t>(k), 0, nullptr, nullptr);
-    auto cImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(m),
+    auto cImage = clCreateImage2D(context, CL_MEM_WRITE_ONLY, &imageFormat, static_cast<size_t>(m),
                                   static_cast<size_t>(k), 0, nullptr, nullptr);
     size_t origin[] = {0, 0, 0};
     {
