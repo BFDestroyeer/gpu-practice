@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
     // Matrix initialization
     constexpr int m = BLOCK_SIZE * 1;
-    constexpr int n = BLOCK_SIZE * 1;
+    constexpr int n = BLOCK_SIZE * 2;
     constexpr int k = BLOCK_SIZE * 1;
 
     std::vector<float> a(m * n);

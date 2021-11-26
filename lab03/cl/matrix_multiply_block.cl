@@ -8,18 +8,18 @@ __kernel void matrix_multiply_block(__global float *a, __global float *b, __glob
     int column = get_global_id(1);
     int local_row = get_local_id(0);
     int local_column = get_local_id(1);
-    int blocks_count = m / BLOCK_SIZE;
+    int blocks_count = n / BLOCK_SIZE;
     float localResult = 0;
     for (int i = 0; i < blocks_count; i++)
     {
-        a_block[local_column][local_row] = a[column * m + BLOCK_SIZE * i + local_row];
-        b_block[local_column][local_row] = b[(BLOCK_SIZE * i + local_column) * n + row];
+        a_block[local_row][local_column] = a[row * n + BLOCK_SIZE * i + local_column];
+        b_block[local_row][local_column] = b[(BLOCK_SIZE * i + local_row) * k + column];
         barrier(CLK_LOCAL_MEM_FENCE);
         for (int j = 0; j < BLOCK_SIZE; j++)
         {
-            localResult += a_block[local_column][j] * b_block[j][local_row];
+            localResult += a_block[local_row][j] * b_block[j][local_column];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    c[k * column + row] = localResult;
+    c[k * row + column] = localResult;
 }

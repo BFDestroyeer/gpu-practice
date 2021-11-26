@@ -163,19 +163,19 @@ void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k
     imageFormat.image_channel_order = CL_R;
     imageFormat.image_channel_data_type = CL_FLOAT;
 
-    auto aImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(m),
+    auto aImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
+                                  static_cast<size_t>(m), 0, nullptr, nullptr);
+    auto bImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(k),
                                   static_cast<size_t>(n), 0, nullptr, nullptr);
-    auto bImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
-                                  static_cast<size_t>(k), 0, nullptr, nullptr);
     auto cImage = clCreateImage2D(context, CL_MEM_WRITE_ONLY, &imageFormat, static_cast<size_t>(m),
                                   static_cast<size_t>(k), 0, nullptr, nullptr);
     size_t origin[] = {0, 0, 0};
     {
-        size_t region[] = {static_cast<size_t>(m), static_cast<size_t>(n), 1};
+        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(m), 1};
         clEnqueueWriteImage(queue, aImage, CL_TRUE, origin, region, 0, 0, a, 0, nullptr, nullptr);
     }
     {
-        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(k), 1};
+        size_t region[] = {static_cast<size_t>(k), static_cast<size_t>(n), 1};
         clEnqueueWriteImage(queue, bImage, CL_TRUE, origin, region, 0, 0, b, 0, nullptr, nullptr);
     }
 
