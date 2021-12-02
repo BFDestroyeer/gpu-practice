@@ -5,14 +5,15 @@ namespace JacobiMethod
 bool isAccurate(const float *xCurrent, const float *xPrevious, size_t n, float epsilon)
 {
     float accuracy = 0;
+#pragma omp parallel for default(none), shared(xCurrent, xPrevious, n) reduction(+ : accuracy)
     for (size_t i = 0; i < n; i++)
     {
         accuracy += (xCurrent[i] - xPrevious[i]) * (xCurrent[i] - xPrevious[i]);
     }
-    return accuracy < (epsilon * epsilon) / 2;
+    return accuracy < (epsilon * epsilon) / 4;
 }
 
-float deviation(float *a, float *b, float *x, int n, float epsilon)
+float deviation(const float *a, const float *b, const float *x, int n, float epsilon)
 {
     float result = 0;
     for (size_t i = 0; i < n; i++)

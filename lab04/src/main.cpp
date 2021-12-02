@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     std::cout << "GPU: " << gpuDeviceName << std::endl;
 
     // Matrix initialization
-    constexpr int n = 512;
+    constexpr int n = 1024 * 1;
 
     std::vector<float> a(n * n);
     std::vector<float> b(n);
