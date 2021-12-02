@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     std::cout << "GPU: " << gpuDeviceName << std::endl;
 
     // Matrix initialization
-    constexpr int n = 16;
+    constexpr int n = 512;
 
     std::vector<float> a(n * n);
     std::vector<float> b(n);
@@ -33,10 +33,12 @@ int main(int argc, char *argv[])
     ArrayUtils::fillWithRandomValues(b);
 
     {
+        double computationTime;
         double begin = omp_get_wtime();
-        JacobiMethod::jacobiMethodOpenCL(a.data(), b.data(), x.data(), n, 0.01, 10, gpuDeviceId, nullptr);
+        JacobiMethod::jacobiMethodOpenCL(a.data(), b.data(), x.data(), n, 0.01, 100, gpuDeviceId, &computationTime);
         double end = omp_get_wtime();
         std::cout << "OpenCL: " << (end - begin) << std::endl;
-        std::cout << "Accurate: " << JacobiMethod::isAccurateSolution(a.data(), b.data(), x.data(), n, 0.01);
+        std::cout << "OpenCL computation: " << computationTime << std::endl;
+        std::cout << "Deviation: " << JacobiMethod::deviation(a.data(), b.data(), x.data(), n, 0.01);
     }
 }

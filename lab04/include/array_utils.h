@@ -9,14 +9,16 @@ template <typename T> void fillWithRandomValues(std::vector<T> &array)
     std::random_device randomDevice;
     std::mt19937 mersenneTwister(randomDevice());
     std::uniform_real_distribution<> distribution(-1.0, 1.0);
-    for (T &element : array)
+#pragma omp parallel for default(none), shared(array, distribution, mersenneTwister)
+    for (size_t i = 0; i < array.size(); i++)
     {
-        element = distribution(mersenneTwister);
+        array[i] = distribution(mersenneTwister);
     }
 }
 
 template <typename T> void makeDiagonallyDominant(std::vector<T> &array, size_t n)
 {
+#pragma omp parallel for default(none), shared(array, n)
     for (size_t i = 0; i < n; i++)
     {
         array[n * i + i] += static_cast<float>(n);

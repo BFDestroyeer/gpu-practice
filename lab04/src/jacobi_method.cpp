@@ -9,12 +9,12 @@ bool isAccurate(const float *xCurrent, const float *xPrevious, size_t n, float e
     {
         accuracy += (xCurrent[i] - xPrevious[i]) * (xCurrent[i] - xPrevious[i]);
     }
-    return accuracy < (epsilon * epsilon);
+    return accuracy < (epsilon * epsilon) / 2;
 }
 
-bool isAccurateSolution(float *a, float *b, float *x, int n, float epsilon)
+float deviation(float *a, float *b, float *x, int n, float epsilon)
 {
-    float deviation = 0;
+    float result = 0;
     for (size_t i = 0; i < n; i++)
     {
         float local_deviation = 0;
@@ -23,9 +23,9 @@ bool isAccurateSolution(float *a, float *b, float *x, int n, float epsilon)
             local_deviation += a[j * n + i] * x[j];
         }
         local_deviation -= b[i];
-        deviation += local_deviation * local_deviation;
+        result += local_deviation * local_deviation;
     }
-    return deviation < epsilon * epsilon;
+    return result;
 }
 
 void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size_t iterationsCount,
