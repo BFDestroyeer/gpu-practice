@@ -28,37 +28,35 @@ int main(int argc, char *argv[])
     std::cout << "GPU: " << gpuDeviceName << std::endl;
 
     // Matrix initialization
-    constexpr int m = BLOCK_SIZE * 16;
-    constexpr int n = BLOCK_SIZE * 16;
-    constexpr int k = BLOCK_SIZE * 16;
+    constexpr int n = BLOCK_SIZE * 1;
 
-    std::vector<float> a(m * n);
-    std::vector<float> b(n * k);
-    std::vector<float> cReference(m * k);
+    std::vector<float> a(n * n);
+    std::vector<float> b(n * n);
+    std::vector<float> cReference(n * n);
     ArrayUtils::fillWithRandomValues(a);
     ArrayUtils::fillWithRandomValues(b);
 
     {
         double begin = omp_get_wtime();
-        MatrixUtils::matrixMultiply(a.data(), b.data(), cReference.data(), m, n, k);
+        MatrixUtils::matrixMultiply(a.data(), b.data(), cReference.data(), n);
         double end = omp_get_wtime();
         std::cout << "Sequential: " << (end - begin) << std::endl;
     }
 
     {
-        std::vector<float> c(m * k);
+        std::vector<float> c(n * n);
         double begin = omp_get_wtime();
-        MatrixUtils::matrixMultiplyOpenMp(a.data(), b.data(), c.data(), m, n, k);
+        MatrixUtils::matrixMultiplyOpenMp(a.data(), b.data(), c.data(), n);
         double end = omp_get_wtime();
         std::cout << "OpenMP: " << (end - begin) << std::endl;
         std::cout << "Equal to reference: " << ArrayUtils::checkEquality(c, cReference) << std::endl;
     }
 
     {
-        std::vector<float> c(m * k);
+        std::vector<float> c(n * n);
         double computationTime;
         double begin = omp_get_wtime();
-        MatrixUtils::matrixMultiplyOpenCl(a.data(), b.data(), c.data(), m, n, k, gpuDeviceId, &computationTime);
+        MatrixUtils::matrixMultiplyOpenCl(a.data(), b.data(), c.data(), n, gpuDeviceId, &computationTime);
         double end = omp_get_wtime();
         std::cout << "OpenCL: " << (end - begin) << std::endl;
         std::cout << "OpenCL computation: " << computationTime << std::endl;
@@ -66,10 +64,10 @@ int main(int argc, char *argv[])
     }
 
     {
-        std::vector<float> c(m * k);
+        std::vector<float> c(n * n);
         double computationTime;
         double begin = omp_get_wtime();
-        MatrixUtils::matrixMultiplyOpenClBlock(a.data(), b.data(), c.data(), m, n, k, gpuDeviceId, &computationTime);
+        MatrixUtils::matrixMultiplyOpenClBlock(a.data(), b.data(), c.data(), n, gpuDeviceId, &computationTime);
         double end = omp_get_wtime();
         std::cout << "OpenCL block: " << (end - begin) << std::endl;
         std::cout << "OpenCL block computation: " << computationTime << std::endl;
@@ -77,10 +75,10 @@ int main(int argc, char *argv[])
     }
 
     {
-        std::vector<float> c(m * k);
+        std::vector<float> c(n * n);
         double computationTime;
         double begin = omp_get_wtime();
-        MatrixUtils::matrixMultiplyOpenClImage(a.data(), b.data(), c.data(), m, n, k, gpuDeviceId, &computationTime);
+        MatrixUtils::matrixMultiplyOpenClImage(a.data(), b.data(), c.data(), n, gpuDeviceId, &computationTime);
         double end = omp_get_wtime();
         std::cout << "OpenCL image: " << (end - begin) << std::endl;
         std::cout << "OpenCL image computation: " << computationTime << std::endl;

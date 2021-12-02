@@ -1,13 +1,13 @@
 #define BLOCK_SIZE 16
 
-__kernel void matrix_multiply_image(__read_only image2d_t a, __read_only image2d_t b, __write_only image2d_t c, int m, int n, int k)
+__kernel void matrix_multiply_image(__read_only image2d_t a, __read_only image2d_t b, __write_only image2d_t c, int n)
 {
     __local float a_block[BLOCK_SIZE][BLOCK_SIZE];
     __local float b_block[BLOCK_SIZE][BLOCK_SIZE];
-    int row = get_global_id(0);
-    int column = get_global_id(1);
-    int local_row = get_local_id(0);
-    int local_column = get_local_id(1);
+    int row = get_global_id(1);
+    int column = get_global_id(0);
+    int local_row = get_local_id(1);
+    int local_column = get_local_id(0);
     int blocks_count = n / BLOCK_SIZE;
     float localResult = 0;
     for (int i = 0; i < blocks_count; i++)

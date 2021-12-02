@@ -2,41 +2,40 @@
 
 namespace MatrixUtils
 {
-void matrixMultiply(const float *a, const float *b, float *c, size_t m, size_t n, size_t k)
+void matrixMultiply(const float *a, const float *b, float *c, size_t n)
 {
-    for (size_t row = 0; row < m; row++)
+    for (size_t row = 0; row < n; row++)
     {
-        for (size_t column = 0; column < k; column++)
+        for (size_t column = 0; column < n; column++)
         {
-            float *localResult = c + k * row + column;
+            float *localResult = c + n * row + column;
             *localResult = 0;
             for (size_t i = 0; i < n; i++)
             {
-                *localResult += a[row * n + i] * b[column + k * i];
+                *localResult += a[row * n + i] * b[column + n * i];
             }
         }
     }
 }
 
-void matrixMultiplyOpenMp(const float *a, const float *b, float *c, size_t m, size_t n, size_t k)
+void matrixMultiplyOpenMp(const float *a, const float *b, float *c, size_t n)
 {
-#pragma omp parallel for default(none), shared(a, b, c, m, n, k)
-    for (size_t row = 0; row < m; row++)
+#pragma omp parallel for default(none), shared(a, b, c, n)
+    for (size_t row = 0; row < n; row++)
     {
-        for (size_t column = 0; column < k; column++)
+        for (size_t column = 0; column < n; column++)
         {
-            float *localResult = c + k * row + column;
+            float *localResult = c + n * row + column;
             *localResult = 0;
             for (size_t i = 0; i < n; i++)
             {
-                *localResult += a[row * n + i] * b[column + k * i];
+                *localResult += a[row * n + i] * b[column + n * i];
             }
         }
     }
 }
 
-void matrixMultiplyOpenCl(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
-                          double *computationTime)
+void matrixMultiplyOpenCl(float *a, float *b, float *c, int n, cl_device_id deviceId, double *computationTime)
 {
     cl_context context = clCreateContext(nullptr, 1, &deviceId, nullptr, nullptr, nullptr);
     cl_command_queue queue = clCreateCommandQueue(context, deviceId, 0, nullptr);
@@ -49,25 +48,23 @@ void matrixMultiplyOpenCl(float *a, float *b, float *c, int m, int n, int k, cl_
     cl_kernel kernel = clCreateKernel(program, "matrix_multiply", nullptr);
 
     // Create buffer
-    auto aBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, m * n * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, aBuffer, CL_TRUE, 0, m * n * sizeof(float), a, 0, nullptr, nullptr);
-    auto bBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * k * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, bBuffer, CL_TRUE, 0, n * k * sizeof(float), b, 0, nullptr, nullptr);
-    auto cBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, m * k * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, cBuffer, CL_TRUE, 0, m * k * sizeof(float), c, 0, nullptr, nullptr);
+    auto aBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, aBuffer, CL_TRUE, 0, n * n * sizeof(float), a, 0, nullptr, nullptr);
+    auto bBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, bBuffer, CL_TRUE, 0, n * n * sizeof(float), b, 0, nullptr, nullptr);
+    auto cBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, cBuffer, CL_TRUE, 0, n * n * sizeof(float), c, 0, nullptr, nullptr);
 
     // Setup arguments
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &aBuffer);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &bBuffer);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &cBuffer);
-    clSetKernelArg(kernel, 3, sizeof(int), &m);
-    clSetKernelArg(kernel, 4, sizeof(int), &n);
-    clSetKernelArg(kernel, 5, sizeof(int), &k);
+    clSetKernelArg(kernel, 3, sizeof(int), &n);
 
     size_t group;
     clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &group, nullptr);
 
-    const size_t globalWorkSize[] = {static_cast<size_t>(m), static_cast<size_t>(k)};
+    const size_t globalWorkSize[] = {static_cast<size_t>(n), static_cast<size_t>(n)};
     const size_t localWorkSize[] = {16, 16};
     double begin = omp_get_wtime();
     clEnqueueNDRangeKernel(queue, kernel, 2, nullptr, globalWorkSize, localWorkSize, 0, nullptr, nullptr);
@@ -78,7 +75,7 @@ void matrixMultiplyOpenCl(float *a, float *b, float *c, int m, int n, int k, cl_
         *computationTime = end - begin;
     }
 
-    clEnqueueReadBuffer(queue, cBuffer, CL_TRUE, 0, m * k * sizeof(float), c, 0, nullptr, nullptr);
+    clEnqueueReadBuffer(queue, cBuffer, CL_TRUE, 0, n * n * sizeof(float), c, 0, nullptr, nullptr);
 
     clReleaseMemObject(aBuffer);
     clReleaseMemObject(bBuffer);
@@ -90,8 +87,7 @@ void matrixMultiplyOpenCl(float *a, float *b, float *c, int m, int n, int k, cl_
     clReleaseContext(context);
 }
 
-void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
-                               double *computationTime)
+void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int n, cl_device_id deviceId, double *computationTime)
 {
     cl_context context = clCreateContext(nullptr, 1, &deviceId, nullptr, nullptr, nullptr);
     cl_command_queue queue = clCreateCommandQueue(context, deviceId, 0, nullptr);
@@ -104,25 +100,23 @@ void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int m, int n, int k
     cl_kernel kernel = clCreateKernel(program, "matrix_multiply_block", nullptr);
 
     // Create buffer
-    auto aBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, m * n * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, aBuffer, CL_TRUE, 0, m * n * sizeof(float), a, 0, nullptr, nullptr);
-    auto bBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * k * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, bBuffer, CL_TRUE, 0, n * k * sizeof(float), b, 0, nullptr, nullptr);
-    auto cBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, m * k * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, cBuffer, CL_TRUE, 0, m * k * sizeof(float), c, 0, nullptr, nullptr);
+    auto aBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, aBuffer, CL_TRUE, 0, n * n * sizeof(float), a, 0, nullptr, nullptr);
+    auto bBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, bBuffer, CL_TRUE, 0, n * n * sizeof(float), b, 0, nullptr, nullptr);
+    auto cBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, n * n * sizeof(float), nullptr, nullptr);
+    clEnqueueWriteBuffer(queue, cBuffer, CL_TRUE, 0, n * n * sizeof(float), c, 0, nullptr, nullptr);
 
     // Setup arguments
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &aBuffer);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &bBuffer);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &cBuffer);
-    clSetKernelArg(kernel, 3, sizeof(int), &m);
-    clSetKernelArg(kernel, 4, sizeof(int), &n);
-    clSetKernelArg(kernel, 5, sizeof(int), &k);
+    clSetKernelArg(kernel, 3, sizeof(int), &n);
 
     size_t group;
     clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &group, nullptr);
 
-    const size_t globalWorkSize[] = {static_cast<size_t>(m), static_cast<size_t>(k)};
+    const size_t globalWorkSize[] = {static_cast<size_t>(n), static_cast<size_t>(n)};
     const size_t localWorkSize[] = {16, 16};
     double begin = omp_get_wtime();
     clEnqueueNDRangeKernel(queue, kernel, 2, nullptr, globalWorkSize, localWorkSize, 0, nullptr, nullptr);
@@ -133,7 +127,7 @@ void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int m, int n, int k
         *computationTime = end - begin;
     }
 
-    clEnqueueReadBuffer(queue, cBuffer, CL_TRUE, 0, m * k * sizeof(float), c, 0, nullptr, nullptr);
+    clEnqueueReadBuffer(queue, cBuffer, CL_TRUE, 0, n * n * sizeof(float), c, 0, nullptr, nullptr);
 
     clReleaseMemObject(aBuffer);
     clReleaseMemObject(bBuffer);
@@ -145,8 +139,7 @@ void matrixMultiplyOpenClBlock(float *a, float *b, float *c, int m, int n, int k
     clReleaseContext(context);
 }
 
-void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k, cl_device_id deviceId,
-                               double *computationTime)
+void matrixMultiplyOpenClImage(float *a, float *b, float *c, int n, cl_device_id deviceId, double *computationTime)
 {
     cl_context context = clCreateContext(nullptr, 1, &deviceId, nullptr, nullptr, nullptr);
     cl_command_queue queue = clCreateCommandQueue(context, deviceId, 0, nullptr);
@@ -164,18 +157,18 @@ void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k
     imageFormat.image_channel_data_type = CL_FLOAT;
 
     auto aImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
-                                  static_cast<size_t>(m), 0, nullptr, nullptr);
-    auto bImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(k),
                                   static_cast<size_t>(n), 0, nullptr, nullptr);
-    auto cImage = clCreateImage2D(context, CL_MEM_WRITE_ONLY, &imageFormat, static_cast<size_t>(k),
-                                  static_cast<size_t>(m), 0, nullptr, nullptr);
+    auto bImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
+                                  static_cast<size_t>(n), 0, nullptr, nullptr);
+    auto cImage = clCreateImage2D(context, CL_MEM_WRITE_ONLY, &imageFormat, static_cast<size_t>(n),
+                                  static_cast<size_t>(n), 0, nullptr, nullptr);
     size_t origin[] = {0, 0, 0};
     {
-        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(m), 1};
+        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(n), 1};
         clEnqueueWriteImage(queue, aImage, CL_TRUE, origin, region, 0, 0, a, 0, nullptr, nullptr);
     }
     {
-        size_t region[] = {static_cast<size_t>(k), static_cast<size_t>(n), 1};
+        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(n), 1};
         clEnqueueWriteImage(queue, bImage, CL_TRUE, origin, region, 0, 0, b, 0, nullptr, nullptr);
     }
 
@@ -183,14 +176,12 @@ void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &aImage);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &bImage);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &cImage);
-    clSetKernelArg(kernel, 3, sizeof(int), &m);
-    clSetKernelArg(kernel, 4, sizeof(int), &n);
-    clSetKernelArg(kernel, 5, sizeof(int), &k);
+    clSetKernelArg(kernel, 3, sizeof(int), &n);
 
     size_t group;
     clGetKernelWorkGroupInfo(kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &group, nullptr);
 
-    const size_t globalWorkSize[] = {static_cast<size_t>(m), static_cast<size_t>(k)};
+    const size_t globalWorkSize[] = {static_cast<size_t>(n), static_cast<size_t>(n)};
     const size_t localWorkSize[] = {16, 16};
     double begin = omp_get_wtime();
     clEnqueueNDRangeKernel(queue, kernel, 2, nullptr, globalWorkSize, localWorkSize, 0, nullptr, nullptr);
@@ -202,7 +193,7 @@ void matrixMultiplyOpenClImage(float *a, float *b, float *c, int m, int n, int k
     }
 
     {
-        size_t region[] = {static_cast<size_t>(k), static_cast<size_t>(m), 1};
+        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(n), 1};
         clEnqueueReadImage(queue, cImage, CL_TRUE, origin, region, 0, 0, c, 0, nullptr, nullptr);
     }
 
