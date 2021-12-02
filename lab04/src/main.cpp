@@ -37,5 +37,6 @@ int main(int argc, char *argv[])
         JacobiMethod::jacobiMethodOpenCL(a.data(), b.data(), x.data(), n, 0.01, 10, gpuDeviceId, nullptr);
         double end = omp_get_wtime();
         std::cout << "OpenCL: " << (end - begin) << std::endl;
+        std::cout << "Accurate: " << JacobiMethod::isAccurateSolution(a.data(), b.data(), x.data(), n, 0.01);
     }
 }

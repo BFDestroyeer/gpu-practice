@@ -12,6 +12,22 @@ bool isAccurate(const float *xCurrent, const float *xPrevious, size_t n, float e
     return accuracy < (epsilon * epsilon);
 }
 
+bool isAccurateSolution(float *a, float *b, float *x, int n, float epsilon)
+{
+    float deviation = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        float local_deviation = 0;
+        for (size_t j = 0; j < n; j++)
+        {
+            local_deviation += a[j * n + i] * x[j];
+        }
+        local_deviation -= b[i];
+        deviation += local_deviation * local_deviation;
+    }
+    return deviation < epsilon * epsilon;
+}
+
 void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size_t iterationsCount,
                         cl_device_id deviceId, double *computationTime)
 {
