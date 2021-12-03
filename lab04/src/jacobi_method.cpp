@@ -42,17 +42,28 @@ void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size
     clBuildProgram(program, 1, &deviceId, nullptr, nullptr, nullptr);
     cl_kernel kernel = clCreateKernel(program, "jacobi_method", nullptr);
 
+    // Create image
+    cl_image_format imageFormat;
+    imageFormat.image_channel_order = CL_R;
+    imageFormat.image_channel_data_type = CL_FLOAT;
+
+    auto aImage = clCreateImage2D(context, CL_MEM_READ_ONLY, &imageFormat, static_cast<size_t>(n),
+                                  static_cast<size_t>(n), 0, nullptr, nullptr);
+    size_t origin[] = {0, 0, 0};
+    {
+        size_t region[] = {static_cast<size_t>(n), static_cast<size_t>(n), 1};
+        clEnqueueWriteImage(queue, aImage, CL_TRUE, origin, region, 0, 0, a, 0, nullptr, nullptr);
+    }
+
     // Create buffer
-    auto aBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * n * sizeof(float), nullptr, nullptr);
-    clEnqueueWriteBuffer(queue, aBuffer, CL_TRUE, 0, n * n * sizeof(float), a, 0, nullptr, nullptr);
     auto bBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * sizeof(float), nullptr, nullptr);
     clEnqueueWriteBuffer(queue, bBuffer, CL_TRUE, 0, n * sizeof(float), b, 0, nullptr, nullptr);
-    auto xInputBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, n * sizeof(float), nullptr, nullptr);
-    auto xOutputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * sizeof(float), nullptr, nullptr);
+    auto xInputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, n * sizeof(float), nullptr, nullptr);
+    auto xOutputBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, n * sizeof(float), nullptr, nullptr);
     clEnqueueWriteBuffer(queue, xOutputBuffer, CL_TRUE, 0, n * sizeof(float), x, 0, nullptr, nullptr);
 
     // Setup arguments
-    clSetKernelArg(kernel, 0, sizeof(cl_mem), &aBuffer);
+    clSetKernelArg(kernel, 0, sizeof(cl_mem), &aImage);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &bBuffer);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &xInputBuffer);
     clSetKernelArg(kernel, 3, sizeof(cl_mem), &xOutputBuffer);
@@ -87,7 +98,7 @@ void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size
         *computationTime = end - begin;
     }
 
-    clReleaseMemObject(aBuffer);
+    clReleaseMemObject(aImage);
     clReleaseMemObject(bBuffer);
     clReleaseMemObject(xInputBuffer);
     clReleaseMemObject(xOutputBuffer);
