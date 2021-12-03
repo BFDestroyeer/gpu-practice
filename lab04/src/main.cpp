@@ -34,11 +34,14 @@ int main(int argc, char *argv[])
 
     {
         double computationTime;
+        size_t iterationsDone;
         double begin = omp_get_wtime();
-        JacobiMethod::jacobiMethodOpenCL(a.data(), b.data(), x.data(), n, 0.001, 100, gpuDeviceId, &computationTime);
+        JacobiMethod::jacobiMethodOpenCL(a.data(), b.data(), x.data(), n, 0.001, 100, gpuDeviceId, &computationTime,
+                                         &iterationsDone);
         double end = omp_get_wtime();
         std::cout << "OpenCL: " << (end - begin) << std::endl;
         std::cout << "OpenCL computation: " << computationTime << std::endl;
+        std::cout << "Iterations: " << iterationsDone << std::endl;
         std::cout << "Deviation: " << JacobiMethod::deviation(a.data(), b.data(), x.data(), n, 0.01);
     }
 }

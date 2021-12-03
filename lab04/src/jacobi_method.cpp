@@ -30,7 +30,7 @@ float deviation(const float *a, const float *b, const float *x, int n, float eps
 }
 
 void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size_t iterationsCount,
-                        cl_device_id deviceId, double *computationTime)
+                        cl_device_id deviceId, double *computationTime, size_t *iterationsDone)
 {
     cl_context context = clCreateContext(nullptr, 1, &deviceId, nullptr, nullptr, nullptr);
     cl_command_queue queue = clCreateCommandQueue(context, deviceId, 0, nullptr);
@@ -96,6 +96,10 @@ void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size
     if (computationTime != nullptr)
     {
         *computationTime = end - begin;
+    }
+    if (iterationsDone != nullptr)
+    {
+        *iterationsDone = iteration;
     }
 
     clReleaseMemObject(aImage);
