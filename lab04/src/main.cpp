@@ -42,6 +42,6 @@ int main(int argc, char *argv[])
         std::cout << "OpenCL: " << (end - begin) << std::endl;
         std::cout << "OpenCL computation: " << computationTime << std::endl;
         std::cout << "Iterations: " << iterationsDone << std::endl;
-        std::cout << "Deviation: " << JacobiMethod::deviation(a.data(), b.data(), x.data(), n, 0.01);
+        std::cout << "Deviation: " << JacobiMethod::deviation(a.data(), b.data(), x.data(), n);
     }
 }

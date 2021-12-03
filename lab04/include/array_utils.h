@@ -8,7 +8,7 @@ template <typename T> void fillWithRandomValues(std::vector<T> &array)
 {
     std::random_device randomDevice;
     std::mt19937 mersenneTwister(randomDevice());
-    std::uniform_real_distribution<> distribution(-1.0, 1.0);
+    std::uniform_real_distribution<> distribution(0.0, 1.0);
 #pragma omp parallel for default(none), shared(array, distribution, mersenneTwister)
     for (size_t i = 0; i < array.size(); i++)
     {
