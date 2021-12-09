@@ -10,10 +10,10 @@ bool isAccurate(const float *xCurrent, const float *xPrevious, size_t n, float e
     {
         accuracy += (xCurrent[i] - xPrevious[i]) * (xCurrent[i] - xPrevious[i]);
     }
-    return accuracy < (epsilon * epsilon) / 64;
+    return std::sqrt(accuracy) / vectorLength(xCurrent, n) < (epsilon * epsilon);
 }
 
-float deviation(const float *a, const float *b, const float *x, int n)
+float deviation(const float *a, const float *b, const float *x, size_t n)
 {
     float result = 0;
     for (size_t i = 0; i < n; i++)
@@ -26,7 +26,17 @@ float deviation(const float *a, const float *b, const float *x, int n)
         local_deviation -= b[i];
         result += local_deviation * local_deviation;
     }
-    return result;
+    return std::sqrt(result) / vectorLength(b, n);
+}
+
+float vectorLength(const float *a, size_t n)
+{
+    float result = 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        result += a[i] * a[i];
+    }
+    return std::sqrt(result);
 }
 
 void jacobiMethodOpenCL(float *a, float *b, float *x, int n, float epsilon, size_t iterationsCount,
