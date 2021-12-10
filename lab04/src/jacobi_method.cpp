@@ -10,7 +10,7 @@ bool isAccurate(const float *xCurrent, const float *xPrevious, size_t n, float e
     {
         accuracy += (xCurrent[i] - xPrevious[i]) * (xCurrent[i] - xPrevious[i]);
     }
-    return std::sqrt(accuracy) / vectorLength(xCurrent, n) < (epsilon * epsilon);
+    return std::sqrt(accuracy) / vectorLength(xCurrent, n) < epsilon;
 }
 
 float deviation(const float *a, const float *b, const float *x, size_t n)
